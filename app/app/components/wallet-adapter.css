@@ -1,0 +1,16 @@
+.wallet-adapter-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #14153f;
+  color: white;
+  font-size: 0.875rem;
+  font-weight: 500;
+  border-radius: 9999px;
+  padding: 0.5rem 1.5rem;
+  transition: background-color 0.3s ease;
+}
+
+.wallet-adapter-button:hover {
+  background-color: rgba(20, 21, 63, 0.9);
+}
