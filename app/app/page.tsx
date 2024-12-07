@@ -8,6 +8,7 @@ import { Check, Copy } from "lucide-react";
 import Link from "next/link";
 import { Footer } from "./components/Footer";
 import ProtectedRoute from "./components/ProtectedRoute";
+import { ChatAnimation } from "./components/ChatAnimation";
 
 export default function Home() {
   return (
@@ -50,6 +51,7 @@ export default function Home() {
                   acquisition costs and boosting conversion.
                 </motion.p>
                 <motion.div
+                  className="flex flex-wrap gap-4"
                   initial={{ opacity: 0, y: 30 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.8, delay: 0.6, ease: "easeOut" }}
@@ -60,28 +62,21 @@ export default function Home() {
                     </Button>
                   </Link>
                   <Link href="/join-group">
-                    <Button className="bg-[#14153F] text-white rounded-full px-8 py-6 ml-4 text-base hover:bg-[#14153F]/90 transition-colors">
+                    <Button className="bg-[#14153F] text-white rounded-full px-8 py-6 text-base hover:bg-[#14153F]/90 transition-colors">
                       Join Group
                     </Button>
                   </Link>
                 </motion.div>
               </motion.div>
 
-              {/* Right Content */}
+              {/* Right Content - Chat Animation */}
               <motion.div
                 className="p-8 sm:p-16 lg:p-24 flex items-center justify-center"
                 initial={{ opacity: 0, x: 50 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ duration: 0.8, ease: "easeOut" }}
               >
-                <Image
-                  src="/placeholder.svg?height=600&width=800"
-                  width={800}
-                  height={600}
-                  alt="Analytics Dashboard"
-                  className="w-full h-auto rounded-xl shadow-2xl"
-                  priority
-                />
+                <ChatAnimation />
               </motion.div>
             </div>
           </div>
@@ -230,7 +225,7 @@ export default function Home() {
                       <div className="w-2.5 h-2.5 rounded-full bg-green-500" />
                     </div>
                   </div>
-                  <pre className="text-gray-300">
+                  <pre className="text-gray-300 overflow-x-auto">
                     <code>{`import { useState, useEffect } from 'react';
 import { createRoot } from 'react-dom/client';
 import Antic, { PartnerData, GroupData } from 'antic-sdk';

@@ -1,142 +1,136 @@
 "use client";
-
 import { useState } from "react";
+import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { useWallet } from "@solana/wallet-adapter-react";
-import { Connection, PublicKey, SystemProgram, Keypair } from "@solana/web3.js";
-import * as anchor from "@project-serum/anchor";
-import idl from "./idl.json"; // Ensure the path to the IDL file is correct
-
-const PROGRAM_ID = new PublicKey(
-  "HCYMe3QTiuomakptZztstEqyhTaR6ABVazRJAvajVBn1"
-);
-const NETWORK = "http://127.0.0.1:8899"; // Local Solana validator network
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Textarea } from "@/components/ui/textarea";
+import { SiteHeader } from "../components/NavBar";
+import { Plus, Minus } from "lucide-react";
+import { Footer } from "../components/Footer";
+import ProtectedRoute from "../components/ProtectedRoute";
 
 export default function CreateGroupPage() {
-  const { publicKey, sendTransaction, connected } = useWallet();
-  const [groupName, setGroupName] = useState("");
-  const [totalAmount, setTotalAmount] = useState("");
-  const [loading, setLoading] = useState(false);
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-
-    if (!connected || !publicKey) {
-      alert("Please connect your wallet.");
-      return;
-    }
-
-    console.log("Creating group...");
-
-    try {
-      setLoading(true);
-
-      // Set up connection to the Solana network
-      const connection = new Connection(NETWORK, "confirmed");
-      console.log("Connection established");
-
-      // Create Anchor provider
-      const provider = new anchor.AnchorProvider(
-        connection,
-        {
-          publicKey,
-          signTransaction: async (transaction) => {
-            return await sendTransaction(transaction, connection);
-          },
-          signAllTransactions: async (transactions) => {
-            return await Promise.all(
-              transactions.map((tx) => sendTransaction(tx, connection))
-            );
-          },
-        },
-        { preflightCommitment: "processed" }
-      );
-
-      anchor.setProvider(provider);
-
-      // Log IDL to inspect it
-      console.log("IDL:", idl);
-
-      // Ensure IDL is valid before proceeding
-      if (!idl || !idl.instructions || !idl.types) {
-        throw new Error("Invalid IDL structure");
-      }
-
-      // Initialize the program
-      //     const program = new anchor.Program(
-      //       idl,
-      //       provider
-      //     ) as unknown as anchor.Program<ProgramType>;
-          
-      // console.log("Program initialized", program);
-
-      // // Generate a new group account
-      // const groupAccount = Keypair.generate();
-      // console.log("Group account generated", groupAccount.publicKey.toBase58());
-
-      // // Prepare the arguments
-      // const totalAmountBN = new anchor.BN(Number(totalAmount));
-      // console.log("Total amount as BN:", totalAmountBN);
-
-      // // Send the `create_group` instruction
-      // const tx = await program.methods
-      //   .createGroup(groupName, totalAmountBN)
-      //   .accounts({
-      //     groupAccount: groupAccount.publicKey,
-      //     creator: publicKey,
-      //     systemProgram: SystemProgram.programId,
-      //   })
-      //   .signers([groupAccount])
-      //   .rpc();
-
-      // console.log("Transaction sent", tx);
-      // alert(`Group created successfully! Transaction: ${tx}`);
-    } catch (error) {
-      console.error("Error creating group:", error);
-      alert("Failed to create the group. See console for details.");
-    } finally {
-      setLoading(false);
-    }
+  const [participants, setParticipants] = useState([""]);
+  const [splitType, setSplitType] = useState("equal");
+//   const {publicKey, disconnect} = useWallet();
+  const addParticipant = () => {
+    setParticipants([...participants, ""]);
   };
-
+  const removeParticipant = (index: number) => {
+    const newParticipants = participants.filter((_, i) => i !== index);
+    setParticipants(newParticipants);
+  };
+  const handleParticipantChange = (index: number, value: string) => {
+    const newParticipants = [...participants];
+    newParticipants[index] = value;
+    setParticipants(newParticipants);
+  };
   return (
-    <div className="min-h-screen flex flex-col justify-center items-center bg-gray-50">
-      <form
-        onSubmit={handleSubmit}
-        className="w-full max-w-sm p-6 bg-white rounded-lg shadow-md space-y-4"
-      >
-        <h1 className="text-xl font-bold text-center">Create Group</h1>
-        <div>
-          <Label htmlFor="groupName">Group Name</Label>
-          <Input
-            id="groupName"
-            value={groupName}
-            onChange={(e) => setGroupName(e.target.value)}
-            placeholder="Enter group name"
-            required
-          />
-        </div>
-        <div>
-          <Label htmlFor="totalAmount">Amount (in SOL)</Label>
-          <Input
-            id="totalAmount"
-            type="number"
-            value={totalAmount}
-            onChange={(e) => setTotalAmount(e.target.value)}
-            placeholder="Enter total amount"
-            required
-          />
-        </div>
-        <Button
-          type="submit"
-          className="w-full bg-blue-600 text-white py-2 rounded-md hover:bg-blue-700 transition"
-          disabled={loading}
-        >
-          {loading ? "Creating..." : "Create Group"}
-        </Button>
-      </form>
-    </div>
+    <ProtectedRoute>
+       
+      <div className="relative min-h-screen overflow-hidden bg-[#F8F8FF]">
+        {/* Background Decorative Elements */}
+        <div className="absolute top-[-300px] left-[-300px] w-[600px] h-[600px] rounded-full bg-pink-100/50 blur-3xl" />
+        <div className="absolute bottom-[-300px] right-[-300px] w-[600px] h-[600px] rounded-full bg-purple-100/50 blur-3xl" />
+        <SiteHeader />
+        <main className="relative pt-32">
+          <motion.div
+            className="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, ease: "easeOut" }}
+          >
+            <div className="bg-white rounded-[2rem] shadow-xl p-8">
+              <h1 className="text-3xl font-bold mb-8 text-center">
+                Create a Group Payment
+              </h1>
+              <form className="space-y-6">
+                <div>
+                  <Label htmlFor="groupName">Group Name</Label>
+                  <Input id="groupName" placeholder="e.g., Trip to NYC" />
+                </div>
+                <div>
+                  <Label htmlFor="totalAmount">Total Amount</Label>
+                  <Input
+                    id="totalAmount"
+                    type="number"
+                    placeholder="Enter total amount"
+                  />
+                </div>
+                <div>
+                  <Label>Participants</Label>
+                  {participants.map((participant, index) => (
+                    <div key={index} className="flex items-center mt-2">
+                      <Input
+                        value={participant}
+                        onChange={(e) =>
+                          handleParticipantChange(index, e.target.value)
+                        }
+                        placeholder="Wallet address or invite link"
+                        className="flex-grow"
+                      />
+                      {index === participants.length - 1 ? (
+                        <Button
+                          type="button"
+                          onClick={addParticipant}
+                          className="ml-2"
+                          variant="outline"
+                        >
+                          <Plus className="h-4 w-4" />
+                        </Button>
+                      ) : (
+                        <Button
+                          type="button"
+                          onClick={() => removeParticipant(index)}
+                          className="ml-2"
+                          variant="outline"
+                        >
+                          <Minus className="h-4 w-4" />
+                        </Button>
+                      )}
+                    </div>
+                  ))}
+                </div>
+                <div>
+                  <Label>Split Type</Label>
+                  <RadioGroup
+                    defaultValue="equal"
+                    className="flex space-x-4 mt-2"
+                  >
+                    <div className="flex items-center space-x-2">
+                      <RadioGroupItem value="equal" id="equal" />
+                      <Label htmlFor="equal">Equal</Label>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <RadioGroupItem value="custom" id="custom" />
+                      <Label htmlFor="custom">Custom</Label>
+                    </div>
+                  </RadioGroup>
+                </div>
+                {splitType === "custom" && (
+                  <div>
+                    <Label htmlFor="customSplit">Custom Split Details</Label>
+                    <Textarea
+                      id="customSplit"
+                      placeholder="Enter custom split details"
+                    />
+                  </div>
+                )}
+                <Button
+                  type="submit"
+                  className="w-full bg-[#14153F] text-white rounded-full py-6 text-base hover:bg-[#14153F]/90 transition-colors"
+                >
+                  Create Group Payment
+                </Button>
+              </form>
+            </div>
+          </motion.div>
+        </main>
+        {/* Footer */}
+        <Footer />
+      </div>
+    </ProtectedRoute>
   );
 }

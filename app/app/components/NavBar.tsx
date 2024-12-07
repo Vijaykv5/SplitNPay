@@ -9,7 +9,6 @@ import { useEffect, useState } from "react";
 import "./wallet-adapter.css"; // Import custom styles for WalletMultiButton
 
 export function SiteHeader() {
-
   const router = useRouter();
   const { publicKey, disconnect } = useWallet();
   const [walletAddress, setWalletAddress] = useState<string | null>(null);
@@ -33,6 +32,13 @@ export function SiteHeader() {
     }
   };
 
+  const handleWalletClick = () => {
+    if (publicKey) {
+      // Navigate to /profile/u/{publicKey}
+      router.push(`/profile/${publicKey.toString()}`);
+    }
+  };
+
   return (
     <motion.header
       className="fixed top-0 left-0 right-0 z-50"
@@ -44,7 +50,7 @@ export function SiteHeader() {
         <div className="bg-white/50 backdrop-blur-xl backdrop-saturate-150 rounded-2xl px-4 sm:px-6 py-4">
           <div className="flex items-center justify-between">
             <Link href="/" className="text-2xl font-bold">
-                S&P
+              S&P
             </Link>
 
             <nav className="hidden sm:flex items-center space-x-8">
@@ -63,15 +69,21 @@ export function SiteHeader() {
 
               {/* Show the connected wallet UI if a wallet is connected */}
               {walletAddress ? (
-                <div className="flex items-center space-x-2 bg-black text-white rounded-full px-4 py-2">
+                <div
+                  className="flex items-center space-x-2 bg-black text-white rounded-full px-4 py-2 cursor-pointer"
+                  onClick={handleWalletClick} // Handle click to navigate
+                >
                   <img
-                    src="https://via.placeholder.com/30" // Placeholder for wallet avatar
+                    src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSZi7OIPEnSno1cZkt5t6MnrSk1AEXTIjwJqg&s" // Placeholder for wallet avatar
                     alt="Wallet Avatar"
                     className="w-8 h-8 rounded-full"
                   />
                   <span className="text-sm">{walletAddress}</span>
                   <button
-                    onClick={disconnect}
+                    onClick={(e) => {
+                      e.stopPropagation(); // Prevent click event from propagating to the parent div
+                      disconnect();
+                    }}
                     className="text-sm hover:opacity-70 transition-opacity"
                   >
                     X

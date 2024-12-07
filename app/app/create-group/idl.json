@@ -1,23 +1,23 @@
 {
-  "address": "HCYMe3QTiuomakptZztstEqyhTaR6ABVazRJAvajVBn1",
+  "address": "5YDTvoguHputm8JTu6gHLxKnwRzpM41GWimtERfRT6MQ",
   "metadata": {
-    "name": "group_storage",
+    "name": "word_storage",
     "version": "0.1.0",
     "spec": "0.1.0",
     "description": "Created with Anchor"
   },
   "instructions": [
     {
-      "name": "create_group",
-      "discriminator": [79, 60, 158, 134, 61, 199, 56, 248],
+      "name": "initialize_word_storage",
+      "discriminator": [64, 184, 60, 149, 75, 206, 190, 241],
       "accounts": [
         {
-          "name": "group_account",
+          "name": "word_account",
           "writable": true,
           "signer": true
         },
         {
-          "name": "creator",
+          "name": "authority",
           "writable": true,
           "signer": true
         },
@@ -28,39 +28,52 @@
       ],
       "args": [
         {
-          "name": "group_name",
+          "name": "word",
           "type": "string"
+        }
+      ]
+    },
+    {
+      "name": "update_word",
+      "discriminator": [83, 120, 126, 197, 226, 43, 15, 232],
+      "accounts": [
+        {
+          "name": "word_account",
+          "writable": true
         },
         {
-          "name": "total_amount",
-          "type": "u64"
+          "name": "authority",
+          "signer": true,
+          "relations": ["word_account"]
+        }
+      ],
+      "args": [
+        {
+          "name": "new_word",
+          "type": "string"
         }
       ]
     }
   ],
   "accounts": [
     {
-      "name": "GroupAccount",
-      "discriminator": [12, 42, 207, 53, 238, 29, 151, 111]
+      "name": "WordAccount",
+      "discriminator": [118, 125, 157, 179, 29, 148, 4, 4]
     }
   ],
   "types": [
     {
-      "name": "GroupAccount",
+      "name": "WordAccount",
       "type": {
         "kind": "struct",
         "fields": [
           {
-            "name": "creator",
-            "type": "pubkey"
-          },
-          {
-            "name": "group_name",
+            "name": "word",
             "type": "string"
           },
           {
-            "name": "total_amount",
-            "type": "u64"
+            "name": "authority",
+            "type": "pubkey"
           }
         ]
       }
