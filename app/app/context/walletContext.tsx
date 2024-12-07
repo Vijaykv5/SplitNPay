@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from "react"; 
 import { useWallet as useSolanaWallet } from "@solana/wallet-adapter-react"; 
+import { ConnectionProvider } from "@solana/wallet-adapter-react";
 
 interface WalletContextType { 
   isWalletConnected: any; 
@@ -37,9 +38,13 @@ export const WalletContextProvider: React.FC<WalletContextProviderProps> = ({ ch
     setLoading(false); 
   }, [connected]);
 
-  return ( 
-    <WalletContext.Provider value={{ isWalletConnected, setIsWalletConnected, loading }}>
-      {children} 
-    </WalletContext.Provider> 
+  return (
+    <ConnectionProvider endpoint="http://127.0.0.1:8899">
+      <WalletContext.Provider
+        value={{ isWalletConnected, setIsWalletConnected, loading }}
+      >
+        {children}
+      </WalletContext.Provider>{" "}
+    </ConnectionProvider>
   ); 
 };
