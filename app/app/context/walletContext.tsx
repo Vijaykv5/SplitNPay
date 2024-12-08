@@ -27,14 +27,14 @@ export const WalletContextProvider: React.FC<WalletContextProviderProps> = ({
 }) => {
   const { connected, disconnect } = useSolanaWallet();
 
-  // State initialization should be done inside useEffect to ensure access to localStorage
+ 
   const [isWalletConnected, setIsWalletConnected] = useState<boolean | null>(
     null
   );
   const [loading, setLoading] = useState<boolean>(true);
 
   useEffect(() => {
-    // Check if we're on the client side (browser environment)
+
     if (typeof window !== "undefined") {
       const savedWalletName = localStorage.getItem("walletName");
       if (savedWalletName) {

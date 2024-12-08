@@ -14,14 +14,14 @@ import {
 import { FC, useMemo } from "react";
 
 import "@solana/wallet-adapter-react-ui/styles.css";
-import { WalletContextProvider } from "../context/walletContext"; // Import WalletContextProvider
+import { WalletContextProvider } from "../context/walletContext"; 
 
 type Props = {
   children?: React.ReactNode;
 };
 
 export const Wallet: FC<Props> = ({ children }) => {
-  const endpoint = "https://api-devnet.helius.xyz"; // RPC endpoint
+  const endpoint = "https://api-devnet.helius.xyz"; 
 
   const wallets = useMemo(
     () => [

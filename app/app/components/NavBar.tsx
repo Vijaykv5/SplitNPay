@@ -6,7 +6,7 @@ import { motion } from "framer-motion";
 import { useWallet } from "@solana/wallet-adapter-react";
 import { WalletMultiButton } from "@solana/wallet-adapter-react-ui";
 import { useEffect, useState } from "react";
-import "./wallet-adapter.css"; // Import custom styles for WalletMultiButton
+import "./wallet-adapter.css"; 
 
 export function SiteHeader() {
   const router = useRouter();
@@ -15,7 +15,7 @@ export function SiteHeader() {
 
   useEffect(() => {
     if (publicKey) {
-      // Set the wallet address in a truncated format
+
       const address = `${publicKey.toString().slice(0, 6)}...${publicKey
         .toString()
         .slice(-4)}`;
@@ -34,7 +34,7 @@ export function SiteHeader() {
 
   const handleWalletClick = () => {
     if (publicKey) {
-      // Navigate to /profile/u/{publicKey}
+      ///profile/u/{publicKey}
       router.push(`/profile/${publicKey.toString()}`);
     }
   };
@@ -61,17 +61,17 @@ export function SiteHeader() {
                 How it works?
               </button>
               <Link
-                href="/about"
+                href="/support"
                 className="text-sm hover:opacity-70 transition-opacity"
               >
-                About
+                Support
               </Link>
 
-              {/* Show the connected wallet UI if a wallet is connected */}
+            
               {walletAddress ? (
                 <div
                   className="flex items-center space-x-2 bg-black text-white rounded-full px-4 py-2 cursor-pointer"
-                  onClick={handleWalletClick} // Handle click to navigate
+                  onClick={handleWalletClick}
                 >
                   <img
                     src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSZi7OIPEnSno1cZkt5t6MnrSk1AEXTIjwJqg&s" // Placeholder for wallet avatar
@@ -94,7 +94,7 @@ export function SiteHeader() {
               )}
             </nav>
 
-            {/* Mobile menu button */}
+           
             <button className="sm:hidden">
               <span className="sr-only">Open main menu</span>
             </button>
