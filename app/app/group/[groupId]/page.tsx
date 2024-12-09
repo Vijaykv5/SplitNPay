@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { supabase } from "../../utils/supabaseClient";
 import { useParams } from "next/navigation";
 import { Toaster, toast } from "sonner";
@@ -17,37 +17,37 @@ const GroupPage = () => {
   const [error, setError] = useState<string | null>(null);
   const [amountPaid, setAmountPaid] = useState(0);
 
-  useEffect(() => {
-    const fetchGroupData = async () => {
-      if (!groupId) return;
+  const fetchGroupData = useCallback(async () => {
+    if (!groupId) return;
 
-      try {
-        setLoading(true);
-        setError(null);
+    try {
+      setLoading(true);
+      setError(null);
 
-        const { data, error } = await supabase
-          .from("groups")
-          .select("*")
-          .eq("id", groupId)
-          .single();
+      const { data, error } = await supabase
+        .from("groups")
+        .select("*")
+        .eq("id", groupId)
+        .single();
 
-        if (error) {
-          setError("Error fetching group data");
-          toast.error(error.message);
-        } else {
-          setGroupData(data);
-          setAmountPaid(data.amount_paid || 0);
-        }
-      } catch (error) {
-        setError("An unexpected error occurred");
-        toast.error("An unexpected error occurred");
-      } finally {
-        setLoading(false);
+      if (error) {
+        setError("Error fetching group data");
+        toast.error(error.message);
+      } else {
+        setGroupData(data);
+        setAmountPaid(data.amount_paid || 0);
       }
-    };
-
-    fetchGroupData();
+    } catch (error) {
+      setError("An unexpected error occurred");
+      toast.error("An unexpected error occurred");
+    } finally {
+      setLoading(false);
+    }
   }, [groupId]);
+
+  useEffect(() => {
+    fetchGroupData();
+  }, [fetchGroupData]);
 
   const handlePayment = async () => {
     if (!window.solana) {
@@ -63,7 +63,6 @@ const GroupPage = () => {
         return;
       }
 
-      // Convert SOL to lamports and ensure it's an integer
       const lamports = Math.round(paymentAmount * web3.LAMPORTS_PER_SOL);
 
       const provider = window.solana;
@@ -80,7 +79,6 @@ const GroupPage = () => {
         "confirmed"
       );
 
-      // Create and sign the transaction
       const transaction = new web3.Transaction().add(
         web3.SystemProgram.transfer({
           fromPubkey: sender,
@@ -167,7 +165,6 @@ const GroupPage = () => {
 
                   <div className="bg-gray-100 rounded-lg p-6 space-y-4">
                     <div className="flex items-center space-x-4">
-                      <div className="text-[#14153F] w-6 h-6" />
                       <div>
                         <p className="font-semibold">Total Goal</p>
                         <p className="text-xl font-bold">
@@ -175,9 +172,7 @@ const GroupPage = () => {
                         </p>
                       </div>
                     </div>
-
                     <div className="flex items-center space-x-4">
-                      <div className="text-[#14153F] w-6 h-6" />
                       <div>
                         <p className="font-semibold">Number of People</p>
                         <p className="text-xl font-bold">
@@ -187,19 +182,15 @@ const GroupPage = () => {
                     </div>
                   </div>
                 </div>
-
                 <div className="space-y-8">
-                  <div className="bg-gray-100 rounded-lg p-6 mb-6 space-y-4">
+                  <div className="bg-gray-100 rounded-lg p-6 space-y-4">
                     <div className="flex items-center space-x-4">
-                      <div className="text-[#14153F] w-6 h-6" />
                       <div>
                         <p className="font-semibold">Amount Paid</p>
                         <p className="text-xl font-bold">{amountPaid} SOL</p>
                       </div>
                     </div>
-
                     <div className="flex items-center space-x-4">
-                      <div className="text-[#14153F] w-6 h-6" />
                       <div>
                         <p className="font-semibold">Amount Remaining</p>
                         <p className="text-xl font-bold">
@@ -208,8 +199,7 @@ const GroupPage = () => {
                       </div>
                     </div>
                   </div>
-
-                  <div className="mb-6">
+                  <div>
                     <h3 className="text-xl font-semibold text-[#14153F] mb-3">
                       Progress
                     </h3>
@@ -225,28 +215,15 @@ const GroupPage = () => {
                       {progressPercentage.toFixed(2)}% Complete
                     </p>
                   </div>
-
-                  <div className="mb-6">
-                    <h3 className="text-xl font-semibold text-[#14153F] mb-3">
-                      Description
-                    </h3>
-                    <p className="text-gray-700 bg-gray-50 p-4 rounded-lg">
-                      {groupData?.group_description ||
-                        "No description available."}
-                    </p>
-                  </div>
-
-                  <div className="mt-8">
-                    <Button
-                      onClick={handlePayment}
-                      className="w-full bg-[#14153F] text-white rounded-full py-4 text-lg hover:bg-[#14153F]/90 transition-all"
-                      disabled={isClosed}
-                    >
-                      {isClosed
-                        ? "Group Closed"
-                        : `Pay ${groupData?.split_amount || 0} SOL`}
-                    </Button>
-                  </div>
+                  <Button
+                    onClick={handlePayment}
+                    className="w-full bg-[#14153F] text-white rounded-full py-4 text-lg hover:bg-[#14153F]/90 transition-all"
+                    disabled={isClosed}
+                  >
+                    {isClosed
+                      ? "Group Closed"
+                      : `Pay ${groupData?.split_amount || 0} SOL`}
+                  </Button>
                 </div>
               </div>
             </div>
