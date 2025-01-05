@@ -1,15 +1,14 @@
 const nextConfig = {
-  reactStrictMode: true, 
+  reactStrictMode: true,
+  basePath: "/_next",
   experimental: {
-    appDir: true, 
+    appDir: true,
   },
   webpack: (config) => {
-    
-    config.externals.push('pino-pretty', 'lokijs', 'encoding');
+    config.externals.push("pino-pretty", "lokijs", "encoding");
 
-   
     config.optimization.splitChunks = {
-      chunks: 'all',
+      chunks: "all",
     };
 
     return config;
@@ -17,11 +16,11 @@ const nextConfig = {
   async headers() {
     return [
       {
-        source: '/_next/static/:path*',
+        source: "/_next/static/:path*",
         headers: [
           {
-            key: 'Cache-Control',
-            value: 'public, max-age=31536000, immutable',
+            key: "Cache-Control",
+            value: "public, max-age=31536000, immutable",
           },
         ],
       },
