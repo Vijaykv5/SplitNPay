@@ -1,9 +1,5 @@
 const nextConfig = {
   reactStrictMode: true,
-  basePath: "/_next",
-  experimental: {
-    appDir: true,
-  },
   webpack: (config) => {
     config.externals.push("pino-pretty", "lokijs", "encoding");
 
