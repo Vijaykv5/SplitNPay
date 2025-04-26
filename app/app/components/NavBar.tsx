@@ -7,11 +7,16 @@ import { useWallet } from "@solana/wallet-adapter-react";
 import { WalletMultiButton } from "@solana/wallet-adapter-react-ui";
 import { useEffect, useState } from "react";
 import "./wallet-adapter.css"; 
+// import LoginButton from "./Login";
+import LoginButton  from "./Login";
 
 export function SiteHeader() {
   const router = useRouter();
   const { publicKey, disconnect } = useWallet();
   const [walletAddress, setWalletAddress] = useState<string | null>(null);
+
+
+  // LoginButton();
 
   useEffect(() => {
     if (publicKey) {
@@ -67,8 +72,10 @@ export function SiteHeader() {
                 Support
               </Link>
 
-            
-              {walletAddress ? (
+              <div className="flex items-center bg-[#14153F]  hover:bg-[#14153F]/90 hover:text-white text-white rounded-3xl bg-blackcursor-pointer">
+                <LoginButton />
+              </div>
+              {/* {walletAddress ? (
                 <div
                   className="flex items-center space-x-2 bg-black text-white rounded-full px-4 py-2 cursor-pointer"
                   onClick={handleWalletClick}
@@ -91,10 +98,9 @@ export function SiteHeader() {
                 </div>
               ) : (
                 <WalletMultiButton className="bg-[#14153F] text-white rounded-full px-6 py-2 text-sm font-medium hover:bg-[#14153F]/90 transition-colors" />
-              )}
+              )} */}
             </nav>
 
-           
             <button className="sm:hidden">
               <span className="sr-only">Open main menu</span>
             </button>

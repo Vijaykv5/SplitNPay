@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 
 import "./globals.css";
 import { Wallet } from "./components/Wallet";
+import { CivicAuthProvider } from "@civic/auth/nextjs";
 
 export const metadata: Metadata = {
   title: "Create Next App",
@@ -16,7 +17,9 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body>
-        <Wallet>{children}</Wallet>
+        <CivicAuthProvider>
+          <Wallet>{children}</Wallet>
+        </CivicAuthProvider>
       </body>
     </html>
   );

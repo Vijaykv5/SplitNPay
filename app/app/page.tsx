@@ -10,7 +10,7 @@ import { ChatAnimation } from "./components/ChatAnimation";
 import { useState } from "react";
 import { supabase } from "./utils/supabaseClient";
 import { toast } from "sonner";
-// import { LazorConnect } from "@lazorkit/wallet";
+import { useUser } from "@civic/auth/react";
 import { Connection } from "@solana/web3.js";
 
 
@@ -18,6 +18,7 @@ export default function Home() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [joinGroupId, setJoinGroupId] = useState("");
   const [modalError, setModalError] = useState<string | null>(null);
+  const { user } = useUser();
 
   const handleJoinGroup = async () => {
     setModalError(null);
@@ -42,17 +43,10 @@ export default function Home() {
 
   return (
     <>
-      {/* <LazorConnect
-        connection={connection}
-        onConnect={(publicKey : any) => {
-          console.log("Connected wallet public key:", publicKey);
-        }}
-      /> */}
       <ProtectedRoute>
         <div className="relative min-h-screen overflow-hidden bg-[#F8F8FF]">
           <div className="absolute top-[-300px] left-[-300px] w-[600px] h-[600px] rounded-full bg-pink-100/50 blur-3xl" />
           <div className="absolute bottom-[-300px] right-[-300px] w-[600px] h-[600px] rounded-full bg-purple-100/50 blur-3xl" />
-
           <SiteHeader />
 
           <main className="relative">

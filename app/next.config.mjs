@@ -1,3 +1,5 @@
+import { createCivicAuthPlugin } from "@civic/auth/nextjs";
+
 const nextConfig = {
   reactStrictMode: true,
   webpack: (config) => {
@@ -24,4 +26,8 @@ const nextConfig = {
   },
 };
 
-module.exports = nextConfig;
+const withCivicAuth = createCivicAuthPlugin({
+  clientId: "7ae45c93-d0df-41cd-ae1c-bf8bed017a2a"
+});
+
+export default withCivicAuth(nextConfig);
