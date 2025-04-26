@@ -15,7 +15,7 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
   const toastShown = useRef(false);
 
   useEffect(() => {
-    if (!isWalletConnected && !loading && !toastShown.current) {
+    if ( !loading && !toastShown.current) {
       toast("Please connect your wallet", {
         description: "You need to connect your wallet to access this page.",
         action: {
@@ -24,9 +24,9 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
         },
       });
       toastShown.current = true;
-      router.push("/");
+      // router.push("/");
     }
-  }, [isWalletConnected, loading, router]);
+  }, [loading, router]);
 
   if (loading) {
     return <div></div>;

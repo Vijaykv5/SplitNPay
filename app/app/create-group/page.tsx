@@ -10,9 +10,13 @@ import { Footer } from "../components/Footer";
 import { ImageUpload } from "../components/ImageUpload";
 import ProtectedRoute from "../components/ProtectedRoute";
 import { useWallet } from "@solana/wallet-adapter-react";
+import { useUser } from "@civic/auth-web3/react";
 
 export default function CreateGroupPage() {
-  const { publicKey } = useWallet();
+  const { disconnect } = useWallet();
+  const userContext = useUser();
+  const [publicKey, setPublicKey] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
   const [groupName, setGroupName] = useState("");
   const [groupPhoto, setGroupPhoto] = useState<string | null>(null);
   const [groupDescription, setGroupDescription] = useState("");
@@ -21,6 +25,18 @@ export default function CreateGroupPage() {
   const [splitAmount, setSplitAmount] = useState<number | null>(null);
   const [groupId, setGroupId] = useState<string | null>(null);
   const [showModal, setShowModal] = useState(false);
+
+  useEffect(() => {
+    console.log("User Context:", userContext);
+    const userPublicKey = (userContext as any).solana?.address;
+    console.log("User Public Key:", userPublicKey);
+    if (userPublicKey) {
+      setPublicKey(userPublicKey.toString());
+    } else {
+      setPublicKey(null);
+    }
+    setLoading(false);
+  }, [userContext]);
 
   const handlePhotoUpload = (imageUrl: string) => {
     setGroupPhoto(imageUrl);
@@ -35,7 +51,7 @@ export default function CreateGroupPage() {
     }
 
     const groupData = {
-      publicKey: publicKey.toString(), // Convert the PublicKey to string
+      publicKey,
       groupName,
       groupPhoto,
       groupDescription,
@@ -79,8 +95,12 @@ export default function CreateGroupPage() {
     }
   }, [totalAmount, numberOfPeople]);
 
+  if (loading) {
+    return <div>Loading...</div>;
+  }
+
   return (
-    <ProtectedRoute>
+    // <ProtectedRoute>
       <div className="relative min-h-screen overflow-hidden bg-[#F8F8FF]">
         <div className="absolute top-[-300px] left-[-300px] w-[600px] h-[600px] rounded-full bg-pink-100/50 blur-3xl" />
         <div className="absolute bottom-[-300px] right-[-300px] w-[600px] h-[600px] rounded-full bg-purple-100/50 blur-3xl" />
@@ -96,80 +116,88 @@ export default function CreateGroupPage() {
               <h1 className="text-3xl font-bold mb-8 text-center">
                 Create a Group
               </h1>
-              <form onSubmit={handleSubmit} className="space-y-6">
-                <div>
-                  <Label htmlFor="groupName">Group Name</Label>
-                  <Input
-                    id="groupName"
-                    value={groupName}
-                    onChange={(e) => setGroupName(e.target.value)}
-                    placeholder="e.g., Trip to NYC"
-                    required
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="groupPhoto">Group Photo (Optional)</Label>
-                  <ImageUpload onUpload={handlePhotoUpload} />
-                  {groupPhoto && (
-                    <img
-                      src={groupPhoto}
-                      alt="Group Photo"
-                      className="mt-2 rounded-md max-w-full h-auto"
-                    />
-                  )}
-                </div>
-                <div>
-                  <Label htmlFor="groupDescription">Group Description</Label>
-                  <Textarea
-                    id="groupDescription"
-                    value={groupDescription}
-                    onChange={(e) => setGroupDescription(e.target.value)}
-                    placeholder="Describe the purpose of this group"
-                    required
-                  />
-                </div>
-                <div className="relative">
-                  <Label htmlFor="totalAmount">Total Amount</Label>
-                  <div className="mt-1 relative rounded-md shadow-sm">
+              {userContext.user ? (
+                <form onSubmit={handleSubmit} className="space-y-6">
+                  <div>
+                    <Label htmlFor="groupName">Group Name</Label>
                     <Input
-                      id="totalAmount"
-                      type="number"
-                      value={totalAmount}
-                      onChange={(e) => setTotalAmount(e.target.value)}
-                      placeholder="Enter total amount"
+                      id="groupName"
+                      value={groupName}
+                      onChange={(e) => setGroupName(e.target.value)}
+                      placeholder="e.g., Trip to NYC"
                       required
-                      className="pr-12"
                     />
-                    <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
-                      <span className="text-gray-500 sm:text-sm">SOL</span>
+                  </div>
+                  <div>
+                    <Label htmlFor="groupPhoto">Group Photo (Optional)</Label>
+                    <ImageUpload onUpload={handlePhotoUpload} />
+                    {groupPhoto && (
+                      <img
+                        src={groupPhoto}
+                        alt="Group Photo"
+                        className="mt-2 rounded-md max-w-full h-auto"
+                      />
+                    )}
+                  </div>
+                  <div>
+                    <Label htmlFor="groupDescription">Group Description</Label>
+                    <Textarea
+                      id="groupDescription"
+                      value={groupDescription}
+                      onChange={(e) => setGroupDescription(e.target.value)}
+                      placeholder="Describe the purpose of this group"
+                      required
+                    />
+                  </div>
+                  <div className="relative">
+                    <Label htmlFor="totalAmount">Total Amount</Label>
+                    <div className="mt-1 relative rounded-md shadow-sm">
+                      <Input
+                        id="totalAmount"
+                        type="number"
+                        value={totalAmount}
+                        onChange={(e) => setTotalAmount(e.target.value)}
+                        placeholder="Enter total amount"
+                        required
+                        className="pr-12"
+                      />
+                      <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                        <span className="text-gray-500 sm:text-sm">SOL</span>
+                      </div>
                     </div>
                   </div>
-                </div>
-                <div>
-                  <Label htmlFor="numberOfPeople">Number of People</Label>
-                  <Input
-                    id="numberOfPeople"
-                    type="number"
-                    value={numberOfPeople}
-                    onChange={(e) => setNumberOfPeople(e.target.value)}
-                    placeholder="Enter number of people"
-                    required
-                  />
-                </div>
-                {splitAmount !== null && (
-                  <div className="mt-4 text-center">
-                    <p className="text-lg font-semibold">
-                      Split Amount: {splitAmount.toFixed(2)} SOL per person
-                    </p>
+                  <div>
+                    <Label htmlFor="numberOfPeople">Number of People</Label>
+                    <Input
+                      id="numberOfPeople"
+                      type="number"
+                      value={numberOfPeople}
+                      onChange={(e) => setNumberOfPeople(e.target.value)}
+                      placeholder="Enter number of people"
+                      required
+                    />
                   </div>
-                )}
-                <Button
-                  type="submit"
-                  className="w-full bg-[#14153F] text-white rounded-full py-6 text-base hover:bg-[#14153F]/90 transition-colors"
-                >
-                  Create Group
-                </Button>
-              </form>
+                  {splitAmount !== null && (
+                    <div className="mt-4 text-center">
+                      <p className="text-lg font-semibold">
+                        Split Amount: {splitAmount.toFixed(2)} SOL per person
+                      </p>
+                    </div>
+                  )}
+                  <Button
+                    type="submit"
+                    className="w-full bg-[#14153F] text-white rounded-full py-6 text-base hover:bg-[#14153F]/90 transition-colors"
+                  >
+                    Create Group
+                  </Button>
+                </form>
+              ) : (
+                <div className="bg-slate-800 p-6 rounded-lg">
+                  <p className="text-slate-300">
+                    Please sign in to create a group.
+                  </p>
+                </div>
+              )}
             </div>
           </motion.div>
         </main>
@@ -191,6 +219,15 @@ export default function CreateGroupPage() {
               </p>
               <Button
                 className="mt-4 w-full"
+                onClick={() => {
+                  setShowModal(false);
+                  disconnect();
+                }}
+              >
+                Sign Out
+              </Button>
+              <Button
+                className="mt-2 w-full"
                 onClick={() => setShowModal(false)}
               >
                 Close
@@ -201,6 +238,6 @@ export default function CreateGroupPage() {
 
         <Footer />
       </div>
-    </ProtectedRoute>
+    // </ProtectedRoute>
   );
 }

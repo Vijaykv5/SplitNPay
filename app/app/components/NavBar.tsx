@@ -6,24 +6,32 @@ import { motion } from "framer-motion";
 import { useWallet } from "@solana/wallet-adapter-react";
 import { WalletMultiButton } from "@solana/wallet-adapter-react-ui";
 import { useEffect, useState } from "react";
-import "./wallet-adapter.css"; 
-// import LoginButton from "./Login";
-import LoginButton  from "./Login";
+import "./wallet-adapter.css";
+import { UserButton } from "@civic/auth-web3/react";
+import { UserProfile } from "../../components/UserProfile";
+import { useUser } from "@civic/auth-web3/react";
 
 export function SiteHeader() {
+  const userContext = useUser();
   const router = useRouter();
   const { publicKey, disconnect } = useWallet();
   const [walletAddress, setWalletAddress] = useState<string | null>(null);
+  const [isUserLoggedIn, setIsUserLoggedIn] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
 
-
-  // LoginButton();
+  useEffect(() => {
+    setIsLoading(true);
+    if (userContext.user) {
+      setIsUserLoggedIn(true);
+    } else {
+      setIsUserLoggedIn(false);
+    }
+    setIsLoading(false);
+  }, [userContext.user]);
 
   useEffect(() => {
     if (publicKey) {
-
-      const address = `${publicKey.toString().slice(0, 6)}...${publicKey
-        .toString()
-        .slice(-4)}`;
+      const address = `${publicKey.toString().slice(0, 6)}...${publicKey.toString().slice(-4)}`;
       setWalletAddress(address);
     } else {
       setWalletAddress(null);
@@ -39,7 +47,6 @@ export function SiteHeader() {
 
   const handleWalletClick = () => {
     if (publicKey) {
-      ///profile/u/{publicKey}
       router.push(`/profile/${publicKey.toString()}`);
     }
   };
@@ -72,33 +79,17 @@ export function SiteHeader() {
                 Support
               </Link>
 
-              <div className="flex items-center bg-[#14153F]  hover:bg-[#14153F]/90 hover:text-white text-white rounded-3xl bg-blackcursor-pointer">
-                <LoginButton />
+              <div className="flex items-center cursor-pointer">
+                {isLoading ? (
+                  <div className="w-8 h-8 rounded-full bg-gray-200 animate-pulse" />
+                ) : isUserLoggedIn ? (
+                  <div className="hover:text-white text-white rounded-3xl bg-[#14153F] hover:bg-[#14153F]/90">
+                    <UserProfile />
+                  </div>
+                ) : (
+                  <UserButton />
+                )}
               </div>
-              {/* {walletAddress ? (
-                <div
-                  className="flex items-center space-x-2 bg-black text-white rounded-full px-4 py-2 cursor-pointer"
-                  onClick={handleWalletClick}
-                >
-                  <img
-                    src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSZi7OIPEnSno1cZkt5t6MnrSk1AEXTIjwJqg&s" // Placeholder for wallet avatar
-                    alt="Wallet Avatar"
-                    className="w-8 h-8 rounded-full"
-                  />
-                  <span className="text-sm">{walletAddress}</span>
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation(); // Prevent click event from propagating to the parent div
-                      disconnect();
-                    }}
-                    className="text-sm hover:opacity-70 transition-opacity"
-                  >
-                    X
-                  </button>
-                </div>
-              ) : (
-                <WalletMultiButton className="bg-[#14153F] text-white rounded-full px-6 py-2 text-sm font-medium hover:bg-[#14153F]/90 transition-colors" />
-              )} */}
             </nav>
 
             <button className="sm:hidden">

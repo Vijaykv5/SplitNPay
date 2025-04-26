@@ -52,7 +52,9 @@ export default function ProfilePage() {
   }, [publicKey]);
 
   const handleCreateGroup = () => {
-    router.push("/create-group");
+    alert("Create group");
+    console.log("Create group");
+    // router.push("/create-group");
   };
 
   const handleJoinGroup = async () => {
@@ -124,7 +126,7 @@ export default function ProfilePage() {
                 <Button
                   size="lg"
                   className="bg-emerald-500 hover:bg-emerald-600 text-white shadow-md transition-all"
-                  onClick={handleCreateGroup}
+                  onClick={() => console.log("Create group")}
                 >
                   Create group
                 </Button>
@@ -159,11 +161,11 @@ export default function ProfilePage() {
                     <div
                       className={`absolute top-2 right-2 py-1 px-3 rounded-xl text-white text-sm ${
                         group.status === "active"
-                          ? "bg-green-500"
-                          : "bg-red-500"
+                          ? "bg-red-500"
+                          : "bg-green-500"
                       }`}
                     >
-                      {group.status === "active" ? "Open" : "Closed"}
+                      {group.status === "active" ? "Closed" : "Open"}
                     </div>
 
                     <div className="h-full flex flex-col items-center justify-center text-gray-600">
@@ -174,7 +176,7 @@ export default function ProfilePage() {
                       </span>
 
                       <p className="text-sm text-center text-gray-500 mt-2">
-                        {group.description ||
+                        {group.group_description ||
                           "Join us for some exciting discussions!"}
                       </p>
                     </div>
