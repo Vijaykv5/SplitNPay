@@ -1,4 +1,4 @@
-<p align="center">
+
   <img src="https://i.ibb.co/v43L7j7Y/1500x500.jpg" alt="Banner" style="width:100%; height:auto;" />
 </p>
 
@@ -16,6 +16,12 @@ It allows users to create payment requests, split bills among multiple participa
 ## Overview
 
 **SplitNPay** solves the hassle of splitting group payments by allowing users to pool funds into a shared wallet and automatically settle balances, eliminating manual calculations and delays in payments.
+
+
+
+<img width="1217" alt="architecture" src="https://github.com/user-attachments/assets/f885f3a1-dafb-4396-aa9c-688412a1af5d" />
+
+
 
 
 ---
