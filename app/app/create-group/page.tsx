@@ -10,9 +10,11 @@ import { Footer } from "../components/Footer";
 import { ImageUpload } from "../components/ImageUpload";
 import ProtectedRoute from "../components/ProtectedRoute";
 import { useWallet } from "@solana/wallet-adapter-react";
+import * as web3 from "@solana/web3.js";
+import { toast } from "sonner";
 
 export default function CreateGroupPage() {
-  const { publicKey } = useWallet();
+  const { publicKey, signTransaction } = useWallet();
   const [groupName, setGroupName] = useState("");
   const [groupPhoto, setGroupPhoto] = useState<string | null>(null);
   const [groupDescription, setGroupDescription] = useState("");
@@ -21,6 +23,7 @@ export default function CreateGroupPage() {
   const [splitAmount, setSplitAmount] = useState<number | null>(null);
   const [groupId, setGroupId] = useState<string | null>(null);
   const [showModal, setShowModal] = useState(false);
+  const [isProcessing, setIsProcessing] = useState(false);
 
   const handlePhotoUpload = (imageUrl: string) => {
     setGroupPhoto(imageUrl);
@@ -29,39 +32,117 @@ export default function CreateGroupPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!publicKey) {
-      console.error("No public key found");
+    if (!publicKey || !signTransaction) {
+      toast.error("Please connect your wallet first");
       return;
     }
 
-    const groupData = {
-      publicKey: publicKey.toString(), // Convert the PublicKey to string
-      groupName,
-      groupPhoto,
-      groupDescription,
-      totalAmount: parseFloat(totalAmount),
-      numberOfPeople: parseInt(numberOfPeople, 10),
-      splitAmount,
-    };
+    if (!splitAmount) {
+      toast.error("Please enter valid total amount and number of people");
+      return;
+    }
+
+    if (isProcessing) {
+      toast.error("Transaction is already being processed");
+      return;
+    }
+
+    setIsProcessing(true);
 
     try {
-      const response = await fetch("/api/create-group", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(groupData),
-      });
+      // Create connection to Solana network
+      const connection = new web3.Connection(
+        web3.clusterApiUrl("devnet"),
+        "confirmed"
+      );
 
-      if (response.ok) {
-        const { groupId } = await response.json();
-        setGroupId(groupId);
-        setShowModal(true);
-      } else {
-        console.error("Failed to create group");
+      // Convert split amount to lamports (amount per person)
+      const lamports = Math.round(splitAmount * web3.LAMPORTS_PER_SOL);
+
+      // Create transaction
+      const transaction = new web3.Transaction().add(
+        web3.SystemProgram.transfer({
+          fromPubkey: publicKey,
+          toPubkey: new web3.PublicKey("95KBgcZxuVyoxjvmrrbm7Hv2s85ChajcWN6HtAWZk9DL"), // Your program's wallet address
+          lamports,
+        })
+      );
+
+      // Get latest blockhash
+      const { blockhash, lastValidBlockHeight } = await connection.getLatestBlockhash();
+      transaction.recentBlockhash = blockhash;
+      transaction.feePayer = publicKey;
+
+      // Sign transaction
+      const signedTransaction = await signTransaction(transaction);
+
+      try {
+        // Send transaction
+        const signature = await connection.sendRawTransaction(
+          signedTransaction.serialize(),
+          { skipPreflight: true } // Skip preflight to avoid simulation errors
+        );
+
+        // Wait for confirmation with timeout
+        const confirmation = await connection.confirmTransaction({
+          signature,
+          blockhash,
+          lastValidBlockHeight
+        }, "confirmed");
+
+        if (confirmation.value.err) {
+          throw new Error("Transaction failed to confirm");
+        }
+
+        // If transaction is successful, create the group
+        const groupData = {
+          publicKey: publicKey.toString(),
+          groupName,
+          groupPhoto,
+          groupDescription,
+          totalAmount: parseFloat(totalAmount),
+          numberOfPeople: parseInt(numberOfPeople, 10),
+          splitAmount,
+          amountPaid: splitAmount, // Add the initial payment amount
+        };
+
+        const response = await fetch("/api/create-group", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(groupData),
+        });
+
+        if (response.ok) {
+          const { groupId } = await response.json();
+          setGroupId(groupId);
+          setShowModal(true);
+          toast.success(`Group created successfully! Paid ${splitAmount} SOL`);
+        } else {
+          toast.error("Failed to create group");
+        }
+      } catch (error: any) {
+        if (error.name === 'SendTransactionError') {
+          // Get detailed error logs
+          const logs = error.logs || [];
+          console.error('Transaction failed with logs:', logs);
+          
+          if (logs.includes('This transaction has already been processed')) {
+            toast.error("This transaction has already been processed. Please try creating a new group.");
+          } else {
+            toast.error(`Transaction failed: ${error.message}`);
+          }
+        } else {
+          toast.error(`Transaction failed: ${error.message}`);
+        }
+        throw error; // Re-throw to be caught by outer catch
       }
-    } catch (error) {
-      console.error("Error creating group:", error);
+    } catch (error: any) {
+      console.error("Error:", error);
+      toast.error(error.message || "Failed to create group. Please try again.");
+    } finally {
+      setIsProcessing(false);
     }
   };
 
