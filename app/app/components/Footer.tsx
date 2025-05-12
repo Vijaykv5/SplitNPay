@@ -2,7 +2,7 @@ export const Footer = () => {
   return (
     <footer className="bg-[#14153F] text-white py-8">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 flex justify-center items-center">
-        <p>&copy; 2024 SnP. Buildr Vijay 💜</p>
+        <p>&copy; 2025 SnP 💜</p>
       </div>
     </footer>
   );

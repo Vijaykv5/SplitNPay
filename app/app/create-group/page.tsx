@@ -24,6 +24,7 @@ export default function CreateGroupPage() {
   const [groupId, setGroupId] = useState<string | null>(null);
   const [showModal, setShowModal] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
+  const [fields, setFields] = useState([]);
 
   const handlePhotoUpload = (imageUrl: string) => {
     setGroupPhoto(imageUrl);
@@ -119,6 +120,15 @@ export default function CreateGroupPage() {
           setGroupId(groupId);
           setShowModal(true);
           toast.success(`Group created successfully! Paid ${splitAmount} SOL`);
+          
+          
+          setGroupName("");
+          setGroupPhoto(null);
+          setGroupDescription("");
+          setTotalAmount("");
+          setNumberOfPeople("");
+          setSplitAmount(null);
+          setFields([]);
         } else {
           toast.error("Failed to create group");
         }
