@@ -9,7 +9,6 @@ import { useParams, useRouter } from "next/navigation";
 import { supabase } from "../../utils/supabaseClient";
 import { toast } from "sonner";
 import { useUser } from "@civic/auth-web3/react";
-import Image from "next/image";
 
 export default function ProfilePage() {
   const { publicKey } = useParams();
@@ -115,7 +114,7 @@ export default function ProfilePage() {
                     "border-4 border-white shadow-md"
                   )}
                 >
-                  <Image
+                  <img
                     src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSZi7OIPEnSno1cZkt5t6MnrSk1AEXTIjwJqg&s"
                     alt="Profile picture"
                     width={80}

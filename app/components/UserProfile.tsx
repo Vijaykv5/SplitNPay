@@ -7,7 +7,6 @@ import { useEffect, useState, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
 import { Connection, LAMPORTS_PER_SOL, PublicKey } from "@solana/web3.js";
-import Image from "next/image";
 
 export function UserProfile() {
   const userContext = useUser();
@@ -189,7 +188,7 @@ export function UserProfile() {
   const renderProfilePicture = (size: 'sm' | 'lg') => {
     if (profilePicture && !imageError) {
       return (
-        <Image 
+        <img 
           src={profilePicture} 
           alt="Profile" 
           width={size === 'sm' ? 40 : 48}
@@ -215,6 +214,7 @@ export function UserProfile() {
     }
   };
 
+
   return (
     <div className="flex items-center gap-4 relative">
       {isLoading ? (
@@ -226,7 +226,7 @@ export function UserProfile() {
         <div className="relative" ref={dropdownRef}>
           <Button
             variant="ghost"
-            className="rounded-full h-10 w-10 p-0  "
+            className="rounded-full h-10 w-10 p-0  bg-black "
             onClick={() => setIsDropdownOpen(!isDropdownOpen)}
           >
             <div className="h-10 w-10 rounded-full flex items-center justify-center overflow-hidden ">
@@ -242,7 +242,7 @@ export function UserProfile() {
                     {renderProfilePicture("lg")}
                   </div>
                   <div>
-                    <p className="font-medium">
+                    <p className="font-medium text-white">
                       {userContext.user?.name || "Solana User"}
                     </p>
                     <p className="text-xs text-slate-400">
