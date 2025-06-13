@@ -7,6 +7,7 @@ import { useEffect, useState, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
 import { Connection, LAMPORTS_PER_SOL, PublicKey } from "@solana/web3.js";
+import Image from "next/image";
 
 export function UserProfile() {
   const userContext = useUser();
@@ -188,12 +189,14 @@ export function UserProfile() {
   const renderProfilePicture = (size: 'sm' | 'lg') => {
     if (profilePicture && !imageError) {
       return (
-        <img 
+        <Image 
           src={profilePicture} 
           alt="Profile" 
+          width={size === 'sm' ? 40 : 48}
+          height={size === 'sm' ? 40 : 48}
           className={`rounded-full object-cover ${size === 'sm' ? 'h-10 w-10' : 'h-12 w-12'}`}
           onError={(e) => {
-            const imgElement = e.currentTarget;
+            const imgElement = e.currentTarget as HTMLImageElement;
             imgElement.onerror = null;
             setImageError(true);
             imgElement.classList.add('hidden');
