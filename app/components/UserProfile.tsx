@@ -226,7 +226,7 @@ export function UserProfile() {
         <div className="relative" ref={dropdownRef}>
           <Button
             variant="ghost"
-            className="rounded-full h-10 w-10 p-0  bg-black "
+            className="rounded-full h-10 w-10 p-0  bg-black hover:bg-slate-800 "
             onClick={() => setIsDropdownOpen(!isDropdownOpen)}
           >
             <div className="h-10 w-10 rounded-full flex items-center justify-center overflow-hidden ">

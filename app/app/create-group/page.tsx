@@ -201,7 +201,6 @@ export default function CreateGroupPage() {
         <div className="absolute bottom-[-300px] right-[-300px] w-[600px] h-[600px] rounded-full bg-purple-100/50 blur-3xl" />
         <div className="flex justify-between items-center px-4 py-2">
           <SiteHeader />
-          <UserProfile />
         </div>
         <main className="relative pt-20 flex-grow">
           <motion.div
