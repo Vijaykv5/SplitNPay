@@ -10,7 +10,7 @@ interface ProtectedRouteProps {
 }
 
 const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
-  const { isWalletConnected, loading } = useWallet();
+  const { loading } = useWallet();
   const router = useRouter();
   const toastShown = useRef(false);
 

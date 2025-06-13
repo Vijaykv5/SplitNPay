@@ -4,7 +4,6 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import { useWallet } from "@solana/wallet-adapter-react";
-import { WalletMultiButton } from "@solana/wallet-adapter-react-ui";
 import { useEffect, useState } from "react";
 import "./wallet-adapter.css";
 import { UserButton } from "@civic/auth-web3/react";
@@ -14,7 +13,7 @@ import { useUser } from "@civic/auth-web3/react";
 export function SiteHeader() {
   const userContext = useUser();
   const router = useRouter();
-  const { publicKey, disconnect } = useWallet();
+  const { publicKey } = useWallet();
   const [walletAddress, setWalletAddress] = useState<string | null>(null);
   const [isUserLoggedIn, setIsUserLoggedIn] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
@@ -83,9 +82,7 @@ export function SiteHeader() {
                 {isLoading ? (
                   <div className="w-8 h-8 rounded-full bg-gray-200 animate-pulse" />
                 ) : isUserLoggedIn ? (
-                  <div className="hover:text-white text-white rounded-3xl bg-[#14153F] hover:bg-[#14153F]/90">
-                    <UserProfile />
-                  </div>
+                  <UserProfile />
                 ) : (
                   <UserButton />
                 )}

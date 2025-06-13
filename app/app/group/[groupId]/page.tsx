@@ -9,6 +9,8 @@ import { Footer } from "../../components/Footer";
 import { Progress } from "@/components/ui/progress";
 import * as web3 from "@solana/web3.js";
 import ProtectedRoute from "@/app/components/ProtectedRoute";
+import { useUser } from "@civic/auth-web3/react";
+import Image from "next/image";
 
 const GroupPage = () => {
   const { groupId } = useParams();
@@ -16,6 +18,18 @@ const GroupPage = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [amountPaid, setAmountPaid] = useState(0);
+  const [payments, setPayments] = useState<any[]>([]);
+  const userContext = useUser();
+
+  const fetchPayments = useCallback(async () => {
+    if (!groupId) return;
+    const { data, error } = await supabase
+      .from("group_payments")
+      .select("payer_address, amount_paid, paid_at")
+      .eq("group_id", groupId)
+      .order("paid_at", { ascending: false });
+    if (!error) setPayments(data || []);
+  }, [groupId]);
 
   const fetchGroupData = useCallback(async () => {
     if (!groupId) return;
@@ -47,11 +61,12 @@ const GroupPage = () => {
 
   useEffect(() => {
     fetchGroupData();
-  }, [fetchGroupData]);
+    fetchPayments();
+  }, [fetchGroupData, fetchPayments]);
 
   const handlePayment = async () => {
-    if (!window.solana) {
-      toast.error("Wallet not connected. Please connect your Solana wallet.");
+    if (!userContext.user) {
+      toast.error("Please sign in with Civic first.");
       return;
     }
 
@@ -65,12 +80,19 @@ const GroupPage = () => {
 
       const lamports = Math.round(paymentAmount * web3.LAMPORTS_PER_SOL);
 
-      const provider = window.solana;
-      const sender = provider.publicKey;
-      const recipient = groupData?.public_key;
+      // Get the wallet from Civic
+      const wallet = (userContext as any).solana?.wallet;
+      if (!wallet || !wallet.publicKey) {
+        toast.error("Wallet not found. Please make sure you're connected with Civic.");
+        return;
+      }
+
+      // Always use a web3.PublicKey instance
+      const sender = new web3.PublicKey(wallet.publicKey);
+      const recipient = groupData?.creator_public_key;
 
       if (!recipient) {
-        toast.error("Recipient wallet address is not configured.");
+        toast.error("Group creator's wallet address is not configured.");
         return;
       }
 
@@ -79,7 +101,11 @@ const GroupPage = () => {
         "confirmed"
       );
 
-      const transaction = new web3.Transaction().add(
+      // Create transaction
+      const transaction = new web3.Transaction();
+      
+      // Add transfer instruction
+      transaction.add(
         web3.SystemProgram.transfer({
           fromPubkey: sender,
           toPubkey: new web3.PublicKey(recipient),
@@ -87,47 +113,85 @@ const GroupPage = () => {
         })
       );
 
-      const { blockhash } = await connection.getLatestBlockhash();
+      // Get latest blockhash
+      const { blockhash, lastValidBlockHeight } = await connection.getLatestBlockhash();
+      
+      // Set transaction properties
       transaction.recentBlockhash = blockhash;
       transaction.feePayer = sender;
+      transaction.lastValidBlockHeight = lastValidBlockHeight;
 
-      const signedTransaction = await provider.signTransaction(transaction);
-      const signature = await connection.sendRawTransaction(
-        signedTransaction.serialize()
-      );
+      try {
+        // Sign transaction
+        const signedTransaction = await wallet.signTransaction(transaction);
+        
+        // Send transaction with proper options
+        const signature = await connection.sendRawTransaction(
+          signedTransaction.serialize(),
+          {
+            skipPreflight: false,
+            preflightCommitment: "confirmed",
+            maxRetries: 3
+          }
+        );
 
-      await connection.confirmTransaction(signature, "confirmed");
+        // Wait for confirmation with proper options
+        const confirmation = await connection.confirmTransaction({
+          signature,
+          blockhash,
+          lastValidBlockHeight
+        }, 'confirmed');
 
-      const newAmountPaid = amountPaid + paymentAmount;
-      const { error } = await supabase
-        .from("groups")
-        .update({ amount_paid: newAmountPaid })
-        .eq("id", groupId);
+        if (confirmation.value.err) {
+          throw new Error("Transaction failed to confirm");
+        }
 
-      if (error) {
-        console.error("Failed to update the database:", error);
-        toast.error("Payment successful, but failed to update the backend.");
-        return;
-      }
+        // Insert payment record into group_payments
+        await supabase
+          .from("group_payments")
+          .insert([
+            {
+              group_id: groupId,
+              payer_address: sender.toString(),
+              amount_paid: paymentAmount,
+            },
+          ]);
 
-      if (newAmountPaid >= groupData.total_amount) {
-        const { error: statusError } = await supabase
+        const newAmountPaid = amountPaid + paymentAmount;
+        const { error: updateError } = await supabase
           .from("groups")
-          .update({ status: "closed" })
+          .update({ amount_paid: newAmountPaid })
           .eq("id", groupId);
 
-        if (statusError) {
-          console.error("Failed to update the group status:", statusError);
-          toast.error("Payment successful, but failed to close the group.");
-        } else {
-          toast.success("Group is now closed.");
+        if (updateError) {
+          console.error("Failed to update the database:", updateError);
+          toast.error(`Payment successful, but failed to update the backend: ${updateError.message}`);
+          return;
         }
+
+        if (newAmountPaid >= groupData.total_amount) {
+          const { error: statusError } = await supabase
+            .from("groups")
+            .update({ status: "closed" })
+            .eq("id", groupId);
+
+          if (statusError) {
+            console.error("Failed to update the group status:", statusError);
+            toast.error(`Payment successful, but failed to close the group: ${statusError.message}`);
+          } else {
+            toast.success("Group is now closed.");
+          }
+        }
+
+        // Refresh group data and payments after successful update
+        await fetchGroupData();
+        await fetchPayments();
+        
+        toast.success(`Payment of ${paymentAmount} SOL successful!`);
+      } catch (error) {
+        console.error("Payment failed:", error);
+        toast.error("Payment failed. Please try again.");
       }
-
-      setAmountPaid(newAmountPaid);
-      setGroupData({ ...groupData, amount_paid: newAmountPaid });
-
-      toast.success(`Payment of ${paymentAmount} SOL successful!`);
     } catch (error) {
       console.error("Payment failed:", error);
       toast.error("Payment failed. Please try again.");
@@ -156,10 +220,12 @@ const GroupPage = () => {
               <div className="grid md:grid-cols-2 gap-8 p-8">
                 <div className="space-y-8">
                   {groupData?.group_photo && (
-                    <img
+                    <Image
                       src={groupData.group_photo}
                       alt="Group Photo"
-                      className="rounded-lg shadow-lg mb-6 w-full max-h-80 object-cover"
+                      width={400}
+                      height={300}
+                      className="w-full h-48 object-cover rounded-lg"
                     />
                   )}
 
@@ -198,6 +264,22 @@ const GroupPage = () => {
                         </p>
                       </div>
                     </div>
+                  </div>
+                  <div className="bg-gray-50 rounded-lg p-4">
+                    <h4 className="font-semibold mb-2">Payment History</h4>
+                    {payments.length === 0 ? (
+                      <p className="text-sm text-gray-500">No payments yet.</p>
+                    ) : (
+                      <ul className="text-sm divide-y">
+                        {payments.map((p, i) => (
+                          <li key={i} className="py-1 flex justify-between">
+                            <span className="truncate max-w-[120px]" title={p.payer_address}>{p.payer_address.slice(0, 6)}...{p.payer_address.slice(-4)}</span>
+                            <span>{p.amount_paid} SOL</span>
+                            <span className="text-gray-400">{new Date(p.paid_at).toLocaleString()}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    )}
                   </div>
                   <div>
                     <h3 className="text-xl font-semibold text-[#14153F] mb-3">

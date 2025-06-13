@@ -26,6 +26,7 @@ export async function POST(request: Request) {
           total_amount: totalAmount,
           number_of_people: numberOfPeople,
           public_key: publicKey,
+          creator_public_key: publicKey,
           split_amount: splitAmount,
         },
       ])

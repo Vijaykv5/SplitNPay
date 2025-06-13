@@ -8,10 +8,13 @@ import ProtectedRoute from "@/app/components/ProtectedRoute";
 import { useParams, useRouter } from "next/navigation";
 import { supabase } from "../../utils/supabaseClient";
 import { toast } from "sonner";
+import { useUser } from "@civic/auth-web3/react";
+import Image from "next/image";
 
 export default function ProfilePage() {
   const { publicKey } = useParams();
   const router = useRouter();
+  const userContext = useUser();
 
   const [groups, setGroups] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -52,13 +55,23 @@ export default function ProfilePage() {
   }, [publicKey]);
 
   const handleCreateGroup = () => {
-    alert("Create group");
-    console.log("Create group");
-    // router.push("/create-group");
+    if (!userContext.user) {
+      toast.error("Please sign in to create a group");
+      return;
+    }
+    router.push('/create-group');
   };
 
   const handleJoinGroup = async () => {
-    setModalError(null);
+    if (!userContext.user) {
+      toast.error("Please sign in to join a group");
+      return;
+    }
+
+    if (!joinGroupId.trim()) {
+      setModalError("Please enter a group ID");
+      return;
+    }
 
     const { data, error } = await supabase
       .from("groups")
@@ -102,9 +115,11 @@ export default function ProfilePage() {
                     "border-4 border-white shadow-md"
                   )}
                 >
-                  <img
+                  <Image
                     src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSZi7OIPEnSno1cZkt5t6MnrSk1AEXTIjwJqg&s"
                     alt="Profile picture"
+                    width={80}
+                    height={80}
                     className="object-cover"
                   />
                 </div>
@@ -126,7 +141,7 @@ export default function ProfilePage() {
                 <Button
                   size="lg"
                   className="bg-emerald-500 hover:bg-emerald-600 text-white shadow-md transition-all"
-                  onClick={() => console.log("Create group")}
+                  onClick={handleCreateGroup}
                 >
                   Create group
                 </Button>
